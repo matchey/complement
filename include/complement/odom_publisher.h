@@ -33,10 +33,12 @@ class odomPublisher
 	double y;
 	double pitch;
 	double yaw;
+	geometry_msgs::Quaternion odom_quat;
 	double vel;
 	double dyaw;
 	double pitch_init;
 	double drift_dyaw;
+	double rate;
 	std_msgs::Bool flag_run;
 	ros::Time current_time, last_time;
 
@@ -47,6 +49,8 @@ class odomPublisher
 	void complement();
 	void publisher();
 	void pubIsRun();
+	void pubTF(const string&);
+	void setRate(const double&);
 };
 
 #endif

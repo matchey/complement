@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   time_util
   visualization_msgs
   mstring
-  lf
+  # lf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -142,8 +142,9 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 ## Declare a C++ executable
 # add_executable(complement_node src/complement_node.cpp)
 add_executable(complement src/complement.cpp src/odom_publisher.cpp)
+add_executable(complement_pubtf src/complement_pubtf.cpp src/odom_publisher.cpp)
 add_executable(set_drift_dyaw src/set_drift_dyaw.cpp src/drift_calculator.cpp)
-add_executable(save_odoms src/save_odoms.cpp)
+# add_executable(save_odoms src/save_odoms.cpp)
 # add_executable(rs_complement src/rs_complement.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -155,8 +156,9 @@ add_executable(save_odoms src/save_odoms.cpp)
 #   ${catkin_LIBRARIES}
 # )
 target_link_libraries(complement ${catkin_LIBRARIES})
+target_link_libraries(complement_pubtf ${catkin_LIBRARIES})
 target_link_libraries(set_drift_dyaw mstring ${catkin_LIBRARIES})
-target_link_libraries(save_odoms node_edge_manager mstring ${catkin_LIBRARIES})
+# target_link_libraries(save_odoms node_edge_manager mstring ${catkin_LIBRARIES})
 # target_link_libraries(rs_complement ${catkin_LIBRARIES})
 
 #############

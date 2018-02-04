@@ -5,6 +5,7 @@
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
 // #include <geometry_msgs/Quaternion.h>
+#include <tf/transform_broadcaster.h>
 #include <nav_msgs/Odometry.h>
 // #include <sensor_msgs/Imu.h>
 #include <std_msgs/Bool.h>
@@ -17,7 +18,7 @@
 using namespace std;
 
 odomPublisher::odomPublisher()
-	: x(0.0), y(0.0), pitch(0.0), yaw(0.0), vel(0.0), dyaw(0.0)
+	: x(0.0), y(0.0), pitch(0.0), yaw(0.0), vel(0.0), dyaw(0.0), rate(1.0)
 {
 	n.param<string>("/topic_name/wheel", topic_wheel, "/tinypower/odom");
 	n.param<string>("/topic_name/gyro", topic_gyro, "/AMU_data");
@@ -45,6 +46,8 @@ void odomPublisher::wheelCallback(const nav_msgs::Odometry::ConstPtr& msg)
 	vel = msg->twist.twist.linear.x;
 	vel = vel > 1.5 ? 1.5 : vel;
 	flag_run.data = fabs(vel) < 0.1 ? false : true;
+
+	vel *= rate;
 }
 
 void odomPublisher::gyroCallback(const ceres_msgs::AMU_data::ConstPtr& msg)
@@ -56,7 +59,10 @@ void odomPublisher::gyroCallback(const ceres_msgs::AMU_data::ConstPtr& msg)
 	// dyaw = msg->dyaw * M_PI / 180;
 	// yaw = msg->yaw * M_PI / 180;
 	
-	// pitch = msg->pitch - pitch_init;
+	// dpitch = msg->pitch - pitch_init;
+	// pitch = msg->pitch;
+	
+	dyaw *= rate;
 }
 
 void odomPublisher::complement()
@@ -73,14 +79,14 @@ void odomPublisher::complement()
 	while(yaw < -M_PI) yaw += 2*M_PI;
 	x += dist * cos(yaw);// * cos(pitch);
 	y += dist * sin(yaw);// * cos(pitch);
+	odom_quat = tf::createQuaternionMsgFromYaw(yaw);
 }
 
 void odomPublisher::publisher()
 {
-	geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(yaw);
-
 	nav_msgs::Odometry odom;
-	odom.header.frame_id = "map";
+	odom.header.frame_id = "/map";
+	odom.header.stamp = ros::Time::now();
 
 	odom.pose.pose.position.x = x;
 	odom.pose.pose.position.y = y;
@@ -93,5 +99,27 @@ void odomPublisher::publisher()
 void odomPublisher::pubIsRun()
 {
 	pub_flag_run.publish(flag_run);
+}
+
+void odomPublisher::pubTF(const string& child_frame)
+{
+    //first, we'll publish the transform over tf
+    geometry_msgs::TransformStamped odom_trans;
+	odom_trans.header.stamp = ros::Time::now();
+    odom_trans.header.frame_id = "/map";
+    odom_trans.child_frame_id = child_frame;
+
+    odom_trans.transform.translation.x = x;
+    odom_trans.transform.translation.y = y;
+    odom_trans.transform.translation.z = 0.0;
+    odom_trans.transform.rotation = odom_quat;
+
+    //send the transform
+    odom_broadcaster.sendTransform(odom_trans);
+}
+
+void odomPublisher::setRate(const double& bag_rate)
+{
+	rate = bag_rate;
 }
 
