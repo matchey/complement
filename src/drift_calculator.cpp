@@ -6,21 +6,44 @@
 #include <std_msgs/Float64.h>
 #include <nav_msgs/Odometry.h>
 #include <fstream>
-#include "ceres_msgs/AMU_data.h"
 #include "complement/drift_calculator.h"
 #include "mstring/mstring.h"
 
+using std::string;
+
 driftCalculator::driftCalculator()
-	: vel(0.0), pitch(0.0), dyaw(0.0), pitch_ave(0.0), dyaw_ave(0.0), cnt_dyaw(0)
+	: n("~"), vel(0.0), pitch(0.0), dyaw(0.0), pitch_ave(0.0), dyaw_ave(0.0), cnt_dyaw(0)
 {
-	sub_wheel = n.subscribe<nav_msgs::Odometry>("/tinypower/odom", 1, &driftCalculator::wheelCallback, this);
-	sub_gyro = n.subscribe<ceres_msgs::AMU_data>("/AMU_data", 1, &driftCalculator::gyroCallback, this);
-	pub_drift = n.advertise<std_msgs::Float64>("/AMU/drift_error/dyaw", 1);
+	string topic_wheel;
+	string topic_gyro;
+	string topic_pub;
+
+	n.param<string>("topic_name/wheel", topic_wheel, "/tinypower/odom");
+	n.param<string>("topic_name/gyro", topic_gyro, "/AMU_data");
+	n.param<string>("topic_name/drift", topic_pub, "/AMU/drift_error/dyaw");
+
+	if(topic_gyro == "/AMU_data"){
+		sub_gyro = n.subscribe<ceres_msgs::AMU_data>
+			                  (topic_gyro, 1, &driftCalculator::gyroCallback, this);
+	}else{
+		sub_gyro = n.subscribe<sensor_msgs::Imu>
+			                  (topic_gyro, 1, &driftCalculator::gyroCallback, this);
+	}
+	sub_wheel = n.subscribe<nav_msgs::Odometry>
+		                   (topic_wheel, 1, &driftCalculator::wheelCallback, this);
+	pub_drift = n.advertise<std_msgs::Float64>(topic_pub, 1);
 }
 
 void driftCalculator::wheelCallback(const nav_msgs::Odometry::ConstPtr& msg)
 {
 	vel = msg->twist.twist.linear.x;
+}
+
+void driftCalculator::gyroCallback(const sensor_msgs::Imu::ConstPtr& msg)
+{
+	pitch = msg->angular_velocity.x;
+	dyaw = msg->angular_velocity.z;
+	calc_dyaw_ave();
 }
 
 void driftCalculator::gyroCallback(const ceres_msgs::AMU_data::ConstPtr& msg)

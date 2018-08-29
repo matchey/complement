@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+	<!-- <arg name="wheel" default="/tinypower/odom" /> -->
+	<arg name="gyro" default="/imu/data " />
+	<arg name="wheel" default="/tinypower/odom" />
+	<!-- <arg name="gyro" default="/AMU_data" /> -->
+	<arg name="topic" default="/imu/drift_error/dyaw" />
+	<arg name="dump" default="none" />
+
+	<node pkg="complement" type="set_drift_dyaw" name="set_drift_dyaw" output="screen">
+		<param name="topic_name/wheel" value="$(arg wheel)" />
+		<param name="topic_name/gyro" value="$(arg gyro)" />
+		<param name="topic_name/drift" value="$(arg topic)" />
+		<param name="dump_path" value="$(arg dump)" />
+	</node>
+</launch>

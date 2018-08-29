@@ -10,13 +10,16 @@ using namespace std;
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "print_drift_dyaw");
+	ros::NodeHandle n("~");
+
+	string path_runtest;
+	n.param<string>("dump_path", path_runtest, "/home/amsl/ros_catkin_ws/params/run_test");
 
 	ros::Time::init();
 	ros::Rate loop_rate(50);
 
 	driftCalculator dc;
 
-	const string path_runtest = "/home/amsl/ros_catkin_ws/params/run_test";
 	int cnt_drift = 0;
 	int cnt_per = 1;
 	int cnt_max = 3000; //amu: 50hz, 3000[count] -> 60[s]
@@ -38,11 +41,13 @@ int main(int argc, char** argv)
 			// double drift = dc.driftErrorGetter();
 			// ros::param::set("/dyaw/drift", drift);
 			// cout << "ros param set [/dyaw/drift] " << drift << endl;
-			dc.yamlWriter("/dyaw/drift", path_runtest + "/drift.yaml");
-			dc.yamlWriter("/pitch/init", path_runtest + "/pitch_init.yaml");
-			cout << "dump \"" << path_runtest << "/drift.yaml\"" << endl;
+			if(path_runtest != "none"){
+				dc.yamlWriter("/dyaw/drift", path_runtest + "/drift.yaml");
+				dc.yamlWriter("/pitch/init", path_runtest + "/pitch_init.yaml");
+				cout << "dump \"" << path_runtest << "/drift.yaml\"" << endl;
+				cout << "dump \"" << path_runtest << "/pitch_init.yaml\"" << endl;
+			}
 			cout << "[/dyaw/drift] " << dc.driftErrorGetter() << endl;
-			cout << "dump \"" << path_runtest << "/pitch_init.yaml\"" << endl;
 			cout << "[/pitch/init] " << dc.pitchInitGetter() << endl;
 			break;
 		}else if(!cnt_drift){

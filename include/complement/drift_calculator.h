@@ -4,6 +4,7 @@
 
 #include <nav_msgs/Odometry.h>
 #include "ceres_msgs/AMU_data.h"
+#include "sensor_msgs/Imu.h"
 
 class driftCalculator
 {
@@ -23,6 +24,7 @@ class driftCalculator
 	public:
 	driftCalculator();
 	void wheelCallback(const nav_msgs::Odometry::ConstPtr&);
+	void gyroCallback(const sensor_msgs::Imu::ConstPtr&);
 	void gyroCallback(const ceres_msgs::AMU_data::ConstPtr&);
 	double pitchInitGetter();
 	double driftErrorGetter();

@@ -9,7 +9,7 @@
 #include <tf/transform_broadcaster.h>
 // #include <geometry_msgs/Quaternion.h>
 #include <nav_msgs/Odometry.h>
-// #include <sensor_msgs/Imu.h>
+#include <sensor_msgs/Imu.h>
 #include <std_msgs/Bool.h>
 // #include <time_util/stopwatch.h>
 // #include <Eigen/Core>
@@ -45,6 +45,7 @@ class odomPublisher
 	public:
 	odomPublisher();
 	void wheelCallback(const nav_msgs::Odometry::ConstPtr&);
+	void gyroCallback(const sensor_msgs::Imu::ConstPtr&);
 	void gyroCallback(const ceres_msgs::AMU_data::ConstPtr&);
 	void complement();
 	void publisher();

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="wheel" default="/tinypower/odom" />
+	<!-- <arg name="gyro" default="/imu/data" /> -->
+	<arg name="gyro" default="/AMU_data" />
+	<arg name="topic" default="/odom/complement" />
+	<arg name="drift" default="-0.00160943" />
+
+	<node pkg="complement" type="complement_pubtf" name="complement_pubtf" output="screen">
+		<param name="topic_name/wheel" value="$(arg wheel)" />
+		<param name="topic_name/gyro" value="$(arg gyro)" />
+		<param name="topic_name/odom_complement" value="$(arg topic)" />
+		<param name="dyaw/drift" value="$(arg drift)" />
+	</node>
+
+	<node pkg="tf" type="static_transform_publisher" name="link3_broadcaster"
+		  args="0 0 1.300 0 0 0 /matching_base_link /velodyne 100" />
+
+</launch>

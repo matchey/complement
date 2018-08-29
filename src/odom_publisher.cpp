@@ -7,32 +7,37 @@
 // #include <geometry_msgs/Quaternion.h>
 #include <tf/transform_broadcaster.h>
 #include <nav_msgs/Odometry.h>
-// #include <sensor_msgs/Imu.h>
 #include <std_msgs/Bool.h>
 // #include <time_util/stopwatch.h>
 // #include <Eigen/Core>
-#include "ceres_msgs/AMU_data.h"
 #include "complement/odom_publisher.h"
 
 
 using namespace std;
 
 odomPublisher::odomPublisher()
-	: x(0.0), y(0.0), pitch(0.0), yaw(0.0), vel(0.0), dyaw(0.0), rate(1.0)
+	: n("~"), x(0.0), y(0.0), pitch(0.0), yaw(0.0), vel(0.0), dyaw(0.0), rate(1.0)
 {
-	n.param<string>("/topic_name/wheel", topic_wheel, "/tinypower/odom");
-	n.param<string>("/topic_name/gyro", topic_gyro, "/AMU_data");
-	n.param<string>("/topic_name/odom_complement", topic_pub, "/odom/complement");
+	n.param<string>("topic_name/wheel", topic_wheel, "/tinypower/odom");
+	n.param<string>("topic_name/gyro", topic_gyro, "/AMU_data");
+	n.param<string>("topic_name/odom_complement", topic_pub, "/odom/complement");
 
 	sub_wheel = n.subscribe<nav_msgs::Odometry>(topic_wheel, 1, &odomPublisher::wheelCallback, this);
-	sub_gyro = n.subscribe<ceres_msgs::AMU_data>(topic_gyro, 1, &odomPublisher::gyroCallback, this);
+	if(topic_gyro == "/AMU_data"){
+		sub_gyro = n.subscribe<ceres_msgs::AMU_data>
+			                  (topic_gyro, 1, &odomPublisher::gyroCallback, this);
+	}else{
+		sub_gyro = n.subscribe<sensor_msgs::Imu>
+			                  (topic_gyro, 1, &odomPublisher::gyroCallback, this);
+	}
+
 	pub_odom = n.advertise<nav_msgs::Odometry>(topic_pub, 1);
 	pub_flag_run = n.advertise<std_msgs::Bool>("/flag/is_run", 1);
 
 	n.getParam("/pitch/init", pitch_init);
 	cout << "init_pitch: " << pitch_init << endl;
 
-	if(!n.getParam("/dyaw/drift", drift_dyaw)){ drift_dyaw = 0.287207006; }
+	if(!n.getParam("dyaw/drift", drift_dyaw)){ drift_dyaw = 0.287207006; }
 	cout << "drift_dyaw: " << drift_dyaw << endl;
 
 	flag_run.data = false;
@@ -48,6 +53,13 @@ void odomPublisher::wheelCallback(const nav_msgs::Odometry::ConstPtr& msg)
 	flag_run.data = fabs(vel) < 0.1 ? false : true;
 
 	vel *= rate;
+}
+
+void odomPublisher::gyroCallback(const sensor_msgs::Imu::ConstPtr& msg)
+{
+	dyaw = msg->angular_velocity.z - drift_dyaw;
+	
+	dyaw *= rate;
 }
 
 void odomPublisher::gyroCallback(const ceres_msgs::AMU_data::ConstPtr& msg)

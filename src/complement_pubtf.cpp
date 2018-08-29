@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 	odomPublisher op;
 
 	if(argc == 2){
-		op.setRate(atof(argv[1]));
+		op.setRate(atof(argv[1])); // bag rate (e.g. rosbag play *.bag -r 0.5 )
 	}
 
 	ros::Rate loop_rate(100);
