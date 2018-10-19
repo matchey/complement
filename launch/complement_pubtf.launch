@@ -6,7 +6,7 @@
 	<arg name="topic" default="/odom/complement" />
 	<arg name="drift" default="-0.00177679" />
 
-	<node pkg="complement" type="complement_pubtf" name="complement_pubtf" output="screen">
+	<node pkg="complement" type="complement" name="complement" output="screen">
 		<param name="topic_name/wheel" value="$(arg wheel)" />
 		<param name="topic_name/gyro" value="$(arg gyro)" />
 		<param name="topic_name/odom_complement" value="$(arg topic)" />

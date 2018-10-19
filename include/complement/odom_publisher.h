@@ -6,53 +6,63 @@
 #define ODOM_PUBLISHER_H
 
 #include <ros/ros.h>
+#include <message_filters/subscriber.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
 #include <tf/transform_broadcaster.h>
-// #include <geometry_msgs/Quaternion.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Imu.h>
-#include <std_msgs/Bool.h>
-// #include <time_util/stopwatch.h>
-// #include <Eigen/Core>
+// #include <std_msgs/Bool.h>
 #include "ceres_msgs/AMU_data.h"
 
-
-using namespace std;
-
-class odomPublisher
+namespace complement
 {
-	ros::NodeHandle n;
-	ros::Subscriber sub_wheel;
-	ros::Subscriber sub_gyro;
-	ros::Publisher pub_odom;
-	ros::Publisher pub_flag_run;
-	tf::TransformBroadcaster odom_broadcaster;
-	string topic_wheel;
-	string topic_gyro;
-	string topic_pub;
-	double x;
-	double y;
-	double pitch;
-	double yaw;
-	geometry_msgs::Quaternion odom_quat;
-	double vel;
-	double dyaw;
-	double pitch_init;
-	double drift_dyaw;
-	double rate;
-	std_msgs::Bool flag_run;
-	ros::Time current_time, last_time;
+	template<typename WheelT, typename GyroT>
+	class odomPublisher
+	{
+		public:
+		using SyncPolicy = message_filters::sync_policies::ApproximateTime<WheelT, GyroT>;
 
-	public:
-	odomPublisher();
-	void wheelCallback(const nav_msgs::Odometry::ConstPtr&);
-	void gyroCallback(const sensor_msgs::Imu::ConstPtr&);
-	void gyroCallback(const ceres_msgs::AMU_data::ConstPtr&);
-	void complement();
-	void publisher();
-	void pubIsRun();
-	void pubTF(const string&);
-	void setRate(const double&);
-};
+		odomPublisher();
+		void setRate(const double&);
 
+		private:
+		void callback(const typename WheelT::ConstPtr&, const typename GyroT::ConstPtr&);
+		void wheelCallback(const typename WheelT::ConstPtr&);
+		void gyroCallback(const sensor_msgs::Imu::ConstPtr&);
+		void gyroCallback(const ceres_msgs::AMU_data::ConstPtr&);
+		void complement();
+		void publisher();
+		void pubTF(const std::string&);
+		// void pubIsRun();
+
+		ros::NodeHandle n;
+		message_filters::Subscriber<WheelT> sub_wheel;
+		message_filters::Subscriber<GyroT> sub_gyro;
+		message_filters::Synchronizer<SyncPolicy> sync;
+		ros::Publisher pub_odom;
+		ros::Publisher pub_flag_run;
+		tf::TransformBroadcaster odom_broadcaster;
+
+		std::string topic_wheel;
+		std::string topic_gyro;
+		std::string topic_pub;
+
+		double x;
+		double y;
+		double pitch;
+		double yaw;
+		geometry_msgs::Quaternion odom_quat;
+		double vel;
+		double dyaw;
+		double pitch_init;
+		double drift_dyaw;
+		double rate;
+		// std_msgs::Bool flag_run;
+		ros::Time current_time, last_time;
+	};
+	template class odomPublisher<nav_msgs::Odometry, sensor_msgs::Imu>;
+	template class odomPublisher<nav_msgs::Odometry, ceres_msgs::AMU_data>;
+} // namespace complement
 #endif
 
