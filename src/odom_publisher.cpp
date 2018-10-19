@@ -24,6 +24,9 @@ namespace complement
 		n.param<string>("topic_name/gyro", topic_gyro, "/AMU_data");
 		n.param<string>("topic_name/odom_complement", topic_pub, "/odom/complement");
 
+		n.param<string>("frame_name/this", frame_this, "/map");
+		n.param<string>("frame_name/child", frame_child, "/matching_base_link");
+
 		sub_wheel.subscribe(n, topic_wheel, 10);
 		sub_gyro.subscribe(n, topic_gyro, 150);
 		// sync.connectInput(sub_wheel, sub_gyro);
@@ -53,6 +56,7 @@ namespace complement
 		wheelCallback(wheel);
 		gyroCallback(gyro);
 		complement();
+		pubTF();
 		publisher();
 	}
 
@@ -108,7 +112,7 @@ namespace complement
 	void odomPublisher<WheelT, GyroT>::publisher()
 	{
 		nav_msgs::Odometry odom;
-		odom.header.frame_id = "/map";
+		odom.header.frame_id = frame_this;
 		odom.header.stamp = ros::Time::now();
 
 		odom.pose.pose.position.x = x;
@@ -126,13 +130,13 @@ namespace complement
 	// }
 
 	template<typename WheelT, typename GyroT>
-	void odomPublisher<WheelT, GyroT>::pubTF(const string& child_frame)
+	void odomPublisher<WheelT, GyroT>::pubTF()
 	{
 		//first, we'll publish the transform over tf
 		geometry_msgs::TransformStamped odom_trans;
 		odom_trans.header.stamp = ros::Time::now();
-		odom_trans.header.frame_id = "/map";
-		odom_trans.child_frame_id = child_frame;
+		odom_trans.header.frame_id = frame_this;
+		odom_trans.child_frame_id = frame_child;
 
 		odom_trans.transform.translation.x = x;
 		odom_trans.transform.translation.y = y;

@@ -5,7 +5,6 @@
 #include <ros/ros.h>
 #include "complement/odom_publisher.h"
 
-
 using namespace std;
 
 int main(int argc, char** argv)
