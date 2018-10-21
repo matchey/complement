@@ -104,8 +104,6 @@ namespace complement
 		x += dist * cos(yaw);// * cos(pitch);
 		y += dist * sin(yaw);// * cos(pitch);
 		odom_quat = tf::createQuaternionMsgFromYaw(yaw);
-
-		vel = dyaw = 0.0;
 	}
 
 	template<typename WheelT, typename GyroT>
