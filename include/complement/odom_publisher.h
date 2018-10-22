@@ -24,8 +24,9 @@ namespace complement
 		using SyncPolicy = message_filters::sync_policies::ApproximateTime<WheelT, GyroT>;
 
 		odomPublisher();
-		void setFrame(const std::string&);
-		void setFrameChild(const std::string&);
+		// void setFrame(const std::string&);
+		// void setFrameChild(const std::string&);
+		void setPubTF(const bool);
 		void setRate(const double&);
 
 		private:
@@ -34,7 +35,7 @@ namespace complement
 		void gyroCallback(const sensor_msgs::Imu::ConstPtr&);
 		void gyroCallback(const ceres_msgs::AMU_data::ConstPtr&);
 		void complement();
-		void publisher();
+		void publisher() const;
 		void pubTF();
 		// void pubIsRun();
 
@@ -43,7 +44,7 @@ namespace complement
 		message_filters::Subscriber<GyroT> sub_gyro;
 		message_filters::Synchronizer<SyncPolicy> sync;
 		ros::Publisher pub_odom;
-		ros::Publisher pub_flag_run;
+		// ros::Publisher pub_flag_run;
 		tf::TransformBroadcaster odom_broadcaster;
 
 		std::string topic_wheel;
@@ -51,6 +52,7 @@ namespace complement
 		std::string topic_pub;
 		std::string frame_this;
 		std::string frame_child;
+		bool flag_tf;
 
 		double x;
 		double y;

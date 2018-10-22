@@ -6,6 +6,8 @@
 	<arg name="topic" default="/odom/complement" />
 	<arg name="drift" default="-0.00177679" />
 
+	<arg name="tf" default="true" />
+
 	<arg name="frame" default="/map" />
 	<arg name="child" default="/matching_base_link" />
 
@@ -14,6 +16,7 @@
 		<param name="topic_name/gyro" value="$(arg gyro)" />
 		<param name="topic_name/odom_complement" value="$(arg topic)" />
 		<param name="dyaw/drift" value="$(arg drift)" />
+		<param name="flag/pubtf" value="$(arg tf)" />
 		<param name="frame_name/this" value="$(arg frame)" />
 		<param name="frame_name/child" value="$(arg child)" />
 	</node>

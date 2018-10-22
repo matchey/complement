@@ -17,8 +17,8 @@ namespace complement
 {
 	template<typename WheelT, typename GyroT>
 	odomPublisher<WheelT, GyroT>::odomPublisher()
-		: sync(SyncPolicy(150), sub_wheel, sub_gyro),
-		  n("~"), x(0.0), y(0.0), pitch(0.0), yaw(0.0), vel(0.0), dyaw(0.0), rate(1.0)
+		: sync(SyncPolicy(150), sub_wheel, sub_gyro), n("~"),
+		  flag_tf(true), x(0.0), y(0.0), pitch(0.0), yaw(0.0), vel(0.0), dyaw(0.0), rate(1.0)
 	{
 		n.param<string>("topic_name/wheel", topic_wheel, "/tinypower/odom");
 		n.param<string>("topic_name/gyro", topic_gyro, "/AMU_data");
@@ -35,7 +35,7 @@ namespace complement
 		// sync.setMaxIntervalDuration(ros::Duration(0.1));
 
 		pub_odom = n.advertise<nav_msgs::Odometry>(topic_pub, 1);
-		pub_flag_run = n.advertise<std_msgs::Bool>("/flag/is_run", 1);
+		// pub_flag_run = n.advertise<std_msgs::Bool>("/flag/is_run", 1);
 
 		n.getParam("/pitch/init", pitch_init);
 		cout << "init_pitch: " << pitch_init << endl;
@@ -50,13 +50,26 @@ namespace complement
 	}
 
 	template<typename WheelT, typename GyroT>
+	void odomPublisher<WheelT, GyroT>::setPubTF(const bool flag)
+	{
+		flag_tf = flag;
+	}
+
+	template<typename WheelT, typename GyroT>
+	void odomPublisher<WheelT, GyroT>::setRate(const double& bag_rate)
+	{
+		rate = bag_rate;
+	}
+
+	//////// private ////////
+	template<typename WheelT, typename GyroT>
 	void odomPublisher<WheelT, GyroT>::callback
 	(const typename WheelT::ConstPtr& wheel, const typename GyroT::ConstPtr& gyro)
 	{
 		wheelCallback(wheel);
 		gyroCallback(gyro);
 		complement();
-		pubTF();
+		if(flag_tf) pubTF();
 		publisher();
 	}
 
@@ -107,7 +120,7 @@ namespace complement
 	}
 
 	template<typename WheelT, typename GyroT>
-	void odomPublisher<WheelT, GyroT>::publisher()
+	void odomPublisher<WheelT, GyroT>::publisher() const
 	{
 		nav_msgs::Odometry odom;
 		odom.header.frame_id = frame_this;
@@ -142,13 +155,7 @@ namespace complement
 		odom_trans.transform.rotation = odom_quat;
 
 		//send the transform
-		odom_broadcaster.sendTransform(odom_trans);
-	}
-
-	template<typename WheelT, typename GyroT>
-	void odomPublisher<WheelT, GyroT>::setRate(const double& bag_rate)
-	{
-		rate = bag_rate;
+		odom_broadcaster.sendTransform(odom_trans); // not const
 	}
 } // namespace complement
 
