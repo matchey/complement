@@ -45,8 +45,8 @@ namespace complement
 
 		// flag_run.data = false;
 
-		current_time = ros::Time::now();
-		last_time= ros::Time::now();
+		current_time = ros::Time(0.0);
+		last_time= current_time;
 	}
 
 	template<typename WheelT, typename GyroT>
@@ -66,6 +66,7 @@ namespace complement
 	void odomPublisher<WheelT, GyroT>::callback
 	(const typename WheelT::ConstPtr& wheel, const typename GyroT::ConstPtr& gyro)
 	{
+		current_time = wheel->header.stamp + (gyro->header.stamp - wheel->header.stamp) * 0.5;
 		wheelCallback(wheel);
 		gyroCallback(gyro);
 		complement();
@@ -102,11 +103,13 @@ namespace complement
 	template<typename WheelT, typename GyroT>
 	void odomPublisher<WheelT, GyroT>::complement()
 	{
-		current_time = ros::Time::now();
+		// current_time = ros::Time::now();
 		double dt = (current_time - last_time).toSec();
-		last_time = ros::Time::now();
+		last_time = current_time;
 
-		if(0.1 < dt) return; // for first callback
+		if(0.1 < dt){ // for the first callback
+			return;
+		}
 
 		double dist = vel * dt;
 
@@ -124,7 +127,7 @@ namespace complement
 	{
 		nav_msgs::Odometry odom;
 		odom.header.frame_id = frame_this;
-		odom.header.stamp = ros::Time::now();
+		odom.header.stamp = current_time;
 
 		odom.pose.pose.position.x = x;
 		odom.pose.pose.position.y = y;
@@ -145,7 +148,7 @@ namespace complement
 	{
 		//first, we'll publish the transform over tf
 		geometry_msgs::TransformStamped odom_trans;
-		odom_trans.header.stamp = ros::Time::now();
+		odom_trans.header.stamp = current_time;
 		odom_trans.header.frame_id = frame_this;
 		odom_trans.child_frame_id = frame_child;
 
