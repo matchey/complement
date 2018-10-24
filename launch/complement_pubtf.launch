@@ -4,7 +4,7 @@
 	<arg name="gyro" default="/imu/data" />
 	<!-- <arg name="gyro" default="/AMU_data" /> -->
 	<arg name="topic" default="/odom/complement" />
-	<arg name="drift" default="-0.00177679" />
+	<arg name="drift" default="-0.00159716" />
 
 	<arg name="tf" default="true" />
 

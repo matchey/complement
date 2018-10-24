@@ -6,8 +6,10 @@
 	<!-- <arg name="gyro" default="/AMU_data" /> -->
 	<arg name="topic" default="/imu/drift_error/dyaw" />
 	<arg name="dump" default="none" />
+	<arg name="count" default="3000" />
 
-	<node pkg="complement" type="set_drift_dyaw" name="set_drift_dyaw" output="screen">
+	<node pkg="complement" type="set_drift_dyaw" name="set_drift_dyaw"
+		  args="$(arg count)" output="screen">
 		<param name="topic_name/wheel" value="$(arg wheel)" />
 		<param name="topic_name/gyro" value="$(arg gyro)" />
 		<param name="topic_name/drift" value="$(arg topic)" />
