@@ -18,7 +18,8 @@ namespace complement
 	template<typename WheelT, typename GyroT>
 	odomPublisher<WheelT, GyroT>::odomPublisher()
 		: sync(SyncPolicy(150), sub_wheel, sub_gyro), n("~"),
-		  flag_tf(true), x(0.0), y(0.0), pitch(0.0), yaw(0.0), vel(0.0), dyaw(0.0), rate(1.0)
+		  flag_tf(true), x(0.0), y(0.0), pitch(0.0), yaw(0.0),// odom_quat(0, 0, 0, 1),
+		  vel(0.0), dyaw(0.0), rate(1.0)
 	{
 		n.param<string>("topic_name/wheel", topic_wheel, "/tinypower/odom");
 		n.param<string>("topic_name/gyro", topic_gyro, "/AMU_data");
@@ -43,6 +44,7 @@ namespace complement
 		if(!n.getParam("dyaw/drift", drift_dyaw)){ drift_dyaw = 0.287207006; }
 		cout << "drift_dyaw: " << drift_dyaw << endl;
 
+		odom_quat = tf::createQuaternionMsgFromYaw(yaw);
 		// flag_run.data = false;
 
 		current_time = ros::Time(0.0);

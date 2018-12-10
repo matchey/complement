@@ -6,11 +6,14 @@
 	<arg name="topic" default="/odom/complement" />
 	<arg name="drift" default="-0.00159716" />
 
+	<!-- <arg name="rate" default="1.0" /> -->
+
 	<arg name="tf" default="true" />
 
 	<arg name="frame" default="/map" />
 	<arg name="child" default="/matching_base_link" />
 
+	<!-- <node pkg="complement" type="complement" name="complement" args="$(arg rate)" output="screen"> -->
 	<node pkg="complement" type="complement" name="complement" output="screen">
 		<param name="topic_name/wheel" value="$(arg wheel)" />
 		<param name="topic_name/gyro" value="$(arg gyro)" />
